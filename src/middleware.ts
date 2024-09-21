@@ -1,34 +1,25 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+// middleware.ts
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
+// Define public routes that do not require authentication
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)',]);
 
-  const isPublicPath = path === "/Form/Login" || path === "/Form/Signup";
-
-  const token = request.cookies.get("token")?.value || "";
-  
-  if(isPublicPath && token){
-    return NextResponse.redirect(new URL('/' , request.nextUrl))
+// Define middleware to handle public and protected routes
+export default clerkMiddleware(
+  (auth, request) => {
+    // Check if the current request matches a public route
+    if (!isPublicRoute(request)) {
+      // If it's not a public route, enforce authentication
+      auth().protect();
+    }
   }
-  
-  if(!isPublicPath && !token)
-  {
-    return NextResponse.redirect(new URL('/Form/Login' , request.nextUrl))
-  }
+);
 
-}
-
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    "/",
-    "/gallery",
-    "/petofthemonth",
-    "/Form/PetForm",
-    "/Form/petofthemonth",
-    "/Form/Login",
-    "/Form/Signup",
-    "/Form/petofthemonthform"
+    // Skip Next.js internals, static files, and assets (html, css, images, etc.)
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always apply the middleware to API and tRPC routes
+    '/(api|trpc)(.*)',
   ],
 };

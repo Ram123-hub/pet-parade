@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 import { useCallback } from 'react';
+import { SignOutButton, useUser } from "@clerk/nextjs";
 
 
 
@@ -15,7 +16,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter()
-  const [user, setUser] = useState<{ username?: string; emailId?: string } | null>(null);
+  const {user} = useUser()
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -25,33 +26,9 @@ export default function Navbar() {
     setMenuOpen(!menuOpen);
   };
 
-  const logout = async () => {
-    try {
-      await axios.get('/api/users/logout')
-      toast.success('Logout successful')
-      setUser(null)
-      router.push('/Form/Login')
-    } catch (error: any) {
-      console.log(error.message)
-      toast.error(error.message)
-    }
-  }
+ 
 
-  const fetchUserData = async () => {
-    try {
-      const response = await axios.get('/api/users/getuser')
-      
-      console.log('user data', response.data)
-      setUser(response.data.data)
-    } catch (error: any) {
-      console.error('Failed to fetch data')
-      toast.error('Failed to fetch user data')
-    }
-  }
 
-  useEffect(() => {
-    fetchUserData()
-  }, [])
 
 
   useEffect(() => {
@@ -114,11 +91,8 @@ export default function Navbar() {
             <div className="px-4 py-3">
               {user ? (
                 <>
-                  <span className="block text-sm text-gray-400 dark:text-white">
+                  <span className="block text-sm text-yellow-600 dark:text-white">
                     {user.username || 'User'}
-                  </span>
-                  <span className="block text-sm text-gray-400 truncate dark:text-gray-400">
-                    {user.emailId || 'No Email'}
                   </span>
                 </>
               ) : (
@@ -138,7 +112,7 @@ export default function Navbar() {
               </li>
               <li>
                 <a
-                  href="/Form/Signup"
+                  href="/sign-up"
                   className="block px-4 py-2 text-sm text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
 
                 >
@@ -147,7 +121,7 @@ export default function Navbar() {
               </li>
               <li>
                 <a
-                  href="/Form/Login"
+                  href="/sign-in"
                   className="block px-4 py-2 text-sm text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                 >
                   Login
@@ -161,10 +135,10 @@ export default function Navbar() {
                   Petofthemonthform
                 </a>
               </li>
-
-              <li className="ml-2 mt-1 mb-1">
-                <Button onClick={logout} className="hover:bg-gray-400 items-center">Logout</Button>
+              <li className="block px-4 py-2 text-sm text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                <SignOutButton/>
               </li>
+
             </ul>
           </div>
           <button
