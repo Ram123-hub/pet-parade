@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { ChangeEvent, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+
 
 // **Schema Validation using Zod**
 const FormSchema = z.object({
@@ -36,7 +38,7 @@ type FormData = z.infer<typeof FormSchema>;
 
 export default function PetForm() {
   const [image, setImage] = useState<File | null>(null);
-
+  const router = useRouter();
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -70,6 +72,11 @@ export default function PetForm() {
       formData.append("image", image); // Append the image
 
       const response = await axios.post("/api/users/petform", formData);
+
+      if(response)
+      {
+        router.push("/gallery")
+      }
 
       const result = await response.data;
       console.log(result);
